@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | NexGen Invest</title>
+    <meta name="description" content="NexGen Invest Admin Control Center">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .badge-count {
+            background: #ef4444;
+            color: #fff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+        .action-btn {
+            padding: 0.35rem 0.8rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .approve-btn { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid #10b981; }
+        .reject-btn  { background: rgba(239,68,68,0.2);  color: #fca5a5; border: 1px solid #ef4444; margin-left: 6px; }
+        .edit-btn    { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid #3b82f6; }
+        .admin-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 200;
+            align-items: center; justify-content: center;
+        }
+        .admin-modal-overlay.open { display: flex; }
+        .admin-modal {
+            background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 2rem; width: 100%; max-width: 420px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .admin-modal h3 { margin-bottom: 1.5rem; font-size: 1.2rem; }
+        .modal-actions { display:flex; gap:1rem; margin-top:1.5rem; justify-content:flex-end; }
+        .no-data { text-align:center; padding:2rem; color:#94a3b8; }
+        .section-header {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;
+        }
+        .refresh-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8; padding: 0.4rem 1rem; border-radius: 8px;
+            cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+        }
+        .refresh-btn:hover { background: rgba(255,255,255,0.1); color:#fff; }
+        @media (max-width:768px) {
+            .hamburger-dash { display:block !important; }
+        }
+    </style>
+</head>
+<body id="admin-app">
+    <div id="global-alert" class="alert" style="position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:999;min-width:300px;text-align:center;"></div>
+
+    <!-- Balance Edit Modal -->
+    <div class="admin-modal-overlay" id="balance-modal">
+        <div class="admin-modal">
+            <h3>✏️ Edit User Balance</h3>
+            <div class="form-group">
+                <label>User</label>
+                <input type="text" id="modal-user-name" readonly style="color:#94a3b8;">
+            </div>
+            <div class="form-group">
+                <label>New Balance (USD)</label>
+                <input type="number" id="modal-new-balance" min="0" step="0.01">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('balance-modal')">Cancel</button>
+                <button class="btn btn-primary" id="modal-save-btn">Save Balance</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand" style="cursor:default;">⚙️ Admin Panel</div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-link active" data-target="view-overview">📊 Overview</div>
+                <div class="sidebar-link" data-target="view-deposits">
+                    💳 Deposit Approvals
+                    <span class="badge-count" id="badge-deposits">0</span>
+                </div>
+                <div class="sidebar-link" data-target="view-withdrawals">
+                    💸 Withdrawal Approvals
+                    <span class="badge-count" id="badge-withdrawals">0</span>
+                </div>
+                <div class="sidebar-link" data-target="view-kyc">
+                    🪪 KYC Verification
+                    <span class="badge-count" id="badge-kyc">0</span>
+                </div>
+                <div class="sidebar-link" data-target="view-users">👥 User Management</div>
+                <div class="sidebar-link" data-target="view-all-tx">📋 All Transactions</div>
+            </nav>
+            <div class="sidebar-link" onclick="logout()" style="margin-top:auto;color:#ef4444;">🚪 Logout</div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div style="display:flex;align-items:center;">
+                    <button class="hamburger-dash" id="dash-hamburger" style="display:none;">☰</button>
+                    <h2 id="page-title">Overview</h2>
+                </div>
+                <div class="user-info">
+                    <span>Super Admin</span>
+                    <div class="avatar" style="background:var(--accent);">A</div>
+                </div>
+            </header>
+
+            <!-- OVERVIEW -->
+            <section id="view-overview" class="view-section active">
+                <div class="dash-grid">
+                    <div class="dash-card primary-bg">
+                        <h4>Total Users</h4>
+                        <div class="amount" id="admin-stat-users">—</div>
+                    </div>
+                    <div class="dash-card">
+                        <h4>Total Approved Deposits</h4>
+                        <div class="amount" id="admin-stat-deposits" style="color:#10b981;">—</div>
+                    </div>
+                    <div class="dash-card">
+                        <h4>Total Withdrawals Paid</h4>
+                        <div class="amount" id="admin-stat-withdrawals" style="color:#ef4444;">—</div>
+                    </div>
+                    <div class="dash-card">
+                        <h4>Active Investments</h4>
+                        <div class="amount" id="admin-stat-investments" style="color:var(--accent);">—</div>
+                    </div>
+                </div>
+
+                <!-- Pending Alerts -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+                    <div class="dash-card" style="border-color:rgba(245,158,11,0.4);">
+                        <h4>⏳ Pending Deposits</h4>
+                        <div class="amount" id="admin-pending-dep" style="color:#fcd34d;">—</div>
+                    </div>
+                    <div class="dash-card" style="border-color:rgba(245,158,11,0.4);">
+                        <h4>⏳ Pending Withdrawals</h4>
+                        <div class="amount" id="admin-pending-wd" style="color:#fcd34d;">—</div>
+                    </div>
+                    <div class="dash-card" style="border-color:rgba(245,158,11,0.4);">
+                        <h4>⏳ Pending KYC</h4>
+                        <div class="amount" id="admin-pending-kyc" style="color:#fcd34d;">—</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DEPOSIT APPROVALS -->
+            <section id="view-deposits" class="view-section">
+                <div class="section-header">
+                    <h2>Deposit Approvals</h2>
+                    <button class="refresh-btn" onclick="loadPendingTransactions('deposit')">🔄 Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deposits-table-body">
+                            <tr><td colspan="6" class="no-data">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- WITHDRAWAL APPROVALS -->
+            <section id="view-withdrawals" class="view-section">
+                <div class="section-header">
+                    <h2>Withdrawal Approvals</h2>
+                    <button class="refresh-btn" onclick="loadPendingTransactions('withdrawal')">🔄 Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawals-table-body">
+                            <tr><td colspan="6" class="no-data">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- KYC VERIFICATION -->
+            <section id="view-kyc" class="view-section">
+                <div class="section-header">
+                    <h2>KYC Verification Queue</h2>
+                    <button class="refresh-btn" onclick="loadPendingKyc()">🔄 Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Document Type</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kyc-table-body">
+                            <tr><td colspan="6" class="no-data">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- USER MANAGEMENT -->
+            <section id="view-users" class="view-section">
+                <div class="section-header">
+                    <h2>User Management</h2>
+                    <button class="refresh-btn" onclick="loadUsers()">🔄 Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Balance</th>
+                                <th>KYC</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-table">
+                            <tr><td colspan="8" class="no-data">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ALL TRANSACTIONS -->
+            <section id="view-all-tx" class="view-section">
+                <div class="section-header">
+                    <h2>All Transactions</h2>
+                    <button class="refresh-btn" onclick="loadAllTransactions()">🔄 Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-tx-table-body">
+                            <tr><td colspan="6" class="no-data">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

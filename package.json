@@ -1,0 +1,14 @@
+{
+  "name": "broker-fullstack",
+  "version": "1.0.0",
+  "description": "Premium Investment Platform",
+  "scripts": {
+    "install:all": "cd backend && npm install",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "npx serve frontend -p 3001",
+    "dev": "npx concurrently \"npm run start:backend\" \"npm run start:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

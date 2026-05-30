@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | NexGen Invest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body id="dashboard-app">
+    <div id="global-alert" class="alert" style="position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:999;width:auto;"></div>
+    
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <a href="index.html" class="brand">NexGen Invest</a>
+            <nav class="sidebar-nav">
+                <div class="sidebar-link active" data-target="view-overview">🏠 Overview</div>
+                <div class="sidebar-link" data-target="view-invest">📈 Investment Plans</div>
+                <div class="sidebar-link" data-target="view-wallet">💰 Wallet & Transfers</div>
+                <div class="sidebar-link" data-target="view-ai">🤖 AI Assistant</div>
+                <div class="sidebar-link" data-target="view-referral">🤝 Referral</div>
+            </nav>
+            <div class="sidebar-link" onclick="logout()" style="margin-top:auto;color:#ef4444;">🚪 Logout</div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div style="display:flex;align-items:center;">
+                    <button class="hamburger-dash" id="dash-hamburger">☰</button>
+                    <h2>Dashboard</h2>
+                </div>
+                <div class="user-info">
+                    <span id="ui-user-name">User</span>
+                    <div class="avatar">U</div>
+                </div>
+            </header>
+
+            <!-- Dashboard Overview -->
+            <section id="view-overview" class="view-section active">
+                <div class="dash-grid">
+                    <div class="dash-card primary-bg">
+                        <h4>Total Balance</h4>
+                        <div class="amount" id="dash-balance">$0.00</div>
+                    </div>
+                    <div class="dash-card">
+                        <h4>Active Investments</h4>
+                        <div class="amount" id="dash-active-investments" style="color: var(--secondary);">$0.00</div>
+                    </div>
+                    <div class="dash-card">
+                        <h4>Referral Earnings</h4>
+                        <div class="amount" id="dash-referral-earnings">$0.00</div>
+                    </div>
+                </div>
+
+                <h3>Recent Transactions</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tx-table-body">
+                            <!-- populated by js -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 style="margin-top: 2rem;">Active Plans</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Plan</th>
+                                <th>Invested</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inv-table-body">
+                            <!-- populated by js -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Investment Plans View -->
+            <section id="view-invest" class="view-section">
+                <h2>Choose an Investment Plan</h2>
+                <div class="plans-grid" style="margin-top:2rem;">
+                    <div class="plan-card" data-plan="Starter">
+                        <h3>Starter</h3>
+                        <div class="roi">5% ROI</div>
+                        <div class="duration">7 Days</div>
+                        <ul><li>Min: $100</li></ul>
+                        <button class="btn btn-primary btn-full invest-btn">Invest Now</button>
+                    </div>
+                    <div class="plan-card featured" data-plan="Standard">
+                        <div class="badge">Popular</div>
+                        <h3>Standard</h3>
+                        <div class="roi">12% ROI</div>
+                        <div class="duration">14 Days</div>
+                        <ul><li>Min: $500</li></ul>
+                        <button class="btn btn-primary btn-full invest-btn">Invest Now</button>
+                    </div>
+                    <div class="plan-card" data-plan="Premium">
+                        <h3>Premium</h3>
+                        <div class="roi">25% ROI</div>
+                        <div class="duration">30 Days</div>
+                        <ul><li>Min: $2,000</li></ul>
+                        <button class="btn btn-primary btn-full invest-btn">Invest Now</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Wallet View -->
+            <section id="view-wallet" class="view-section">
+                <h2>Wallet Transfers</h2>
+                <div style="display:flex;gap:2rem;margin-top:2rem;flex-wrap:wrap;">
+                    <div class="dash-card" style="flex:1;min-width:300px;">
+                        <h3>Deposit Funds</h3>
+                        <form id="deposit-form" style="margin-top:1.5rem;">
+                            <div class="form-group">
+                                <label>Amount (USD)</label>
+                                <input type="number" id="deposit-amount" min="10" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full">Request Deposit</button>
+                        </form>
+                    </div>
+                    <div class="dash-card" style="flex:1;min-width:300px;">
+                        <h3>Withdraw Funds</h3>
+                        <form id="withdraw-form" style="margin-top:1.5rem;">
+                            <div class="form-group">
+                                <label>Amount (USD)</label>
+                                <input type="number" id="withdraw-amount" min="10" required>
+                            </div>
+                            <button type="submit" class="btn btn-outline btn-full">Request Withdrawal</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Assistant View -->
+            <section id="view-ai" class="view-section">
+                <h2>AI Investment Advisor</h2>
+                <div class="chat-window" style="margin-top:2rem;">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message bot">Hello! I am your AI Investment Advisor. Ask me anything about our plans, wealth building, or how to grow your portfolio.</div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chat-input" placeholder="Type your message here...">
+                        <button id="chat-send-btn">Send</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Referral View -->
+            <section id="view-referral" class="view-section">
+                <h2>Refer & Earn</h2>
+                <div class="dash-card" style="margin-top:2rem;">
+                    <p>Share your referral code with friends and earn a bonus when they sign up and invest!</p>
+                    <div class="form-group" style="margin-top:1.5rem;">
+                        <label>Your Referral Code</label>
+                        <input type="text" id="ref-code-display" readonly style="font-size:1.5rem;text-align:center;color:var(--primary);cursor:pointer;" onclick="this.select();document.execCommand('copy');showAlert('Copied!', 'success');">
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
