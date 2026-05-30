@@ -1,6 +1,6 @@
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:5000/api' 
-    : '/api'; // Use relative path for production if served from same domain, or update this to your production URL
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://broker-2-w53t.onrender.com/api'; // <--- Your Live Backend URL
 
 
 // =====================================================
@@ -142,10 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // =====================================================
 function guardAuth(requiredRole) {
     const token = localStorage.getItem('token');
-    const role  = localStorage.getItem('userRole');
+    const role = localStorage.getItem('userRole');
     if (!token) { window.location.href = 'login.html'; return; }
     if (requiredRole === 'admin' && role !== 'admin') { window.location.href = 'dashboard.html'; }
-    if (requiredRole === 'user'  && role === 'admin')  { window.location.href = 'admin.html'; }
+    if (requiredRole === 'user' && role === 'admin') { window.location.href = 'admin.html'; }
 }
 
 // =====================================================
@@ -153,7 +153,7 @@ function guardAuth(requiredRole) {
 // =====================================================
 async function initDashboard() {
     // Sidebar navigation
-    const links    = document.querySelectorAll('.sidebar-link[data-target]');
+    const links = document.querySelectorAll('.sidebar-link[data-target]');
     const sections = document.querySelectorAll('.view-section');
 
     links.forEach(link => {
